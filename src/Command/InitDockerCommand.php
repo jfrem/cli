@@ -26,15 +26,19 @@ final class InitDockerCommand extends Command
         ProjectContext::assertInProject(getcwd());
         $env = EnvReader::read(getcwd() . '/.env');
         $dbType = strtolower(trim((string) ($env['DB_TYPE'] ?? 'mysql')));
+        $dbMode = strtolower(trim((string) ($env['DB_MODE'] ?? 'docker')));
         if (!in_array($dbType, ['mysql', 'sqlsrv'], true)) {
             $dbType = 'mysql';
             $output->writeln('<comment>DB_TYPE invalido en .env; se usa mysql por defecto.</comment>');
+        }
+        if (!in_array($dbMode, ['docker', 'connection-string'], true)) {
+            $dbMode = 'docker';
         }
 
         SafeWriter::write(getcwd(), 'docker/Dockerfile', ScaffoldTemplates::dockerfile($dbType));
         SafeWriter::write(getcwd(), 'docker/nginx.conf', ScaffoldTemplates::nginxConf());
         SafeWriter::write(getcwd(), 'docker/healthcheck.php', ScaffoldTemplates::dockerHealthcheck());
-        SafeWriter::write(getcwd(), 'docker-compose.yml', ScaffoldTemplates::dockerCompose($dbType));
+        SafeWriter::write(getcwd(), 'docker-compose.yml', ScaffoldTemplates::dockerCompose($dbType, $dbMode));
 
         $output->writeln('<info>Docker inicializado.</info>');
         return Command::SUCCESS;

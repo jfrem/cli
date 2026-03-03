@@ -32,6 +32,14 @@
 - Correcciones de comando Docker:
   - `init:docker` ahora respeta `DB_TYPE` para generar `docker/Dockerfile` y `docker-compose.yml` consistentes con `mysql|sqlsrv`.
   - Se agrega test de integracion para evitar regresiones del stack SQL Server en `init:docker`.
+- Seleccion de modalidad DB en `new`:
+  - Nuevo `db-mode` interactivo/no interactivo: `docker` o `connection-string`.
+  - Soporte de `DB_DSN` (`--db-dsn`) para integrar instancias existentes (locales/remotas).
+  - `db:migrate` soporta `DB_DSN` con prioridad sobre `DB_HOST/DB_PORT/DB_NAME`.
+  - `db:fresh` se bloquea cuando `DB_DSN` esta definido para evitar operaciones destructivas en bases existentes.
+  - `init:docker` respeta `DB_MODE=connection-string` y omite el servicio DB en `docker-compose`.
+- Compatibilidad local de runtime:
+  - El `composer.json` generado por scaffold ahora declara `php ^8.1` para permitir pruebas locales `/health` en entornos con PHP 8.1.
 
 
 

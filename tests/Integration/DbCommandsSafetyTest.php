@@ -63,6 +63,20 @@ final class DbCommandsSafetyTest extends TestCase
         $this->assertStringContainsString('DB_NAME invalido', $tester->getDisplay());
     }
 
+    public function testDbFreshIsBlockedWhenUsingDbDsnMode(): void
+    {
+        file_put_contents(
+            $this->tmpRoot . DIRECTORY_SEPARATOR . '.env',
+            "DB_TYPE=sqlsrv\nDB_MODE=connection-string\nDB_DSN=sqlsrv:Server=demo,1433;Database=demo\nDB_USER=sa\nDB_PASS=secret\n"
+        );
+
+        $tester = new CommandTester(new DbFreshCommand());
+        $exitCode = $tester->execute(['--force' => true]);
+
+        $this->assertSame(Command::FAILURE, $exitCode);
+        $this->assertStringContainsString('no esta permitido con DB_DSN', $tester->getDisplay());
+    }
+
     private function deleteDir(string $dir): void
     {
         if (!is_dir($dir)) {

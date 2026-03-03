@@ -16,6 +16,7 @@ final class ProjectScaffolder
         $withDocker = (bool) ($config['withDocker'] ?? false);
         $generateTests = (bool) ($config['generateTests'] ?? true);
         $dbType = (string) ($config['dbType'] ?? 'mysql');
+        $dbMode = (string) ($config['dbMode'] ?? 'docker');
 
         $envConfig = $this->resolveEnvConfig($config, $withDocker, $dbType);
 
@@ -58,7 +59,7 @@ final class ProjectScaffolder
             '.env.dev' => ScaffoldTemplates::env($envConfig, 'development', $withJwt, false),
             '.env.test' => ScaffoldTemplates::env($envConfig, 'testing', $withJwt, true),
             '.env.prod' => ScaffoldTemplates::env($envConfig, 'production', $withJwt, true),
-            'README.md' => ScaffoldTemplates::readme((string) $config['projectName'], $preset, $withDocker, $dbType),
+            'README.md' => ScaffoldTemplates::readme((string) $config['projectName'], $preset, $withDocker, $dbType, $dbMode),
             'public/index.php' => ScaffoldTemplates::publicIndex(),
             'public/.htaccess' => ScaffoldTemplates::htaccess(),
             'app/Controllers/Controller.php' => ScaffoldTemplates::baseController(),
@@ -99,7 +100,7 @@ final class ProjectScaffolder
             $files['docker/Dockerfile'] = ScaffoldTemplates::dockerfile($dbType);
             $files['docker/nginx.conf'] = ScaffoldTemplates::nginxConf();
             $files['docker/healthcheck.php'] = ScaffoldTemplates::dockerHealthcheck();
-            $files['docker-compose.yml'] = ScaffoldTemplates::dockerCompose($dbType);
+            $files['docker-compose.yml'] = ScaffoldTemplates::dockerCompose($dbType, $dbMode);
         }
 
         foreach ($files as $path => $content) {
@@ -113,7 +114,8 @@ final class ProjectScaffolder
      */
     private function resolveEnvConfig(array $config, bool $withDocker, string $dbType): array
     {
-        if (!$withDocker) {
+        $dbMode = (string) ($config['dbMode'] ?? 'docker');
+        if (!$withDocker || $dbMode !== 'docker') {
             return $config;
         }
 

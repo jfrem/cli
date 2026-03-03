@@ -25,7 +25,9 @@ final class NewProjectCommand extends Command
             ->setDescription('Crea un nuevo proyecto PHP MVC')
             ->addArgument('name', InputArgument::REQUIRED, 'Nombre del proyecto')
             ->addOption('preset', null, InputOption::VALUE_REQUIRED, 'Preset: api-basic|api-auth-jwt|api-enterprise')
+            ->addOption('db-mode', null, InputOption::VALUE_REQUIRED, 'Modalidad DB: docker|connection-string')
             ->addOption('database', null, InputOption::VALUE_REQUIRED, 'Driver de base de datos: mysql|sqlsrv')
+            ->addOption('db-dsn', null, InputOption::VALUE_REQUIRED, 'Cadena de conexion PDO para instancia existente')
             ->addOption('db-host', null, InputOption::VALUE_REQUIRED, 'Host de base de datos')
             ->addOption('db-port', null, InputOption::VALUE_REQUIRED, 'Puerto de base de datos')
             ->addOption('db-name', null, InputOption::VALUE_REQUIRED, 'Nombre de base de datos')
@@ -53,15 +55,26 @@ final class NewProjectCommand extends Command
         }
         $preset = $preset !== '' ? $preset : 'api-auth-jwt';
 
+        $dbMode = (string) ($input->getOption('db-mode') ?: '');
+        if ($dbMode === '' && $input->isInteractive()) {
+            $q = new ChoiceQuestion('Modalidad de configuracion DB', ['docker', 'connection-string'], 'docker');
+            $dbMode = (string) $helper->ask($input, $output, $q);
+        }
+        $dbMode = $dbMode !== '' ? $dbMode : 'docker';
+
         $dbType = (string) ($input->getOption('database') ?: '');
         if ($dbType === '' && $input->isInteractive()) {
             $q = new ChoiceQuestion('Motor de base de datos', ['mysql', 'sqlsrv'], 'sqlsrv');
             $dbType = (string) $helper->ask($input, $output, $q);
         }
-        $dbType = $dbType !== '' ? $dbType : 'mysql';
+        $dbType = $dbType !== '' ? $dbType : 'sqlsrv';
 
         if (!in_array($preset, ['api-basic', 'api-auth-jwt', 'api-enterprise'], true)) {
             $output->writeln('<error>Preset invalido.</error>');
+            return Command::FAILURE;
+        }
+        if (!in_array($dbMode, ['docker', 'connection-string'], true)) {
+            $output->writeln('<error>db-mode invalido. Usa docker o connection-string.</error>');
             return Command::FAILURE;
         }
         if (!in_array($dbType, ['mysql', 'sqlsrv'], true)) {
@@ -70,7 +83,12 @@ final class NewProjectCommand extends Command
         }
 
         $defaultPort = $dbType === 'mysql' ? '3306' : '1433';
+        $defaultUser = $dbType === 'mysql' ? 'root' : 'sa';
+        $defaultDsn = $dbType === 'sqlsrv'
+            ? 'sqlsrv:Server=localhost,1433;Database=app_db;Encrypt=yes;TrustServerCertificate=no'
+            : 'mysql:host=localhost;port=3306;dbname=app_db;charset=utf8mb4';
 
+        $dbDsn = (string) ($input->getOption('db-dsn') ?: '');
         $dbHost = (string) ($input->getOption('db-host') ?: '');
         $dbPort = (string) ($input->getOption('db-port') ?: '');
         $dbName = (string) ($input->getOption('db-name') ?: '');
@@ -78,31 +96,56 @@ final class NewProjectCommand extends Command
         $dbPass = (string) ($input->getOption('db-pass') ?: '');
 
         if ($input->isInteractive()) {
-            if ($dbHost === '') {
-                $dbHost = (string) $helper->ask($input, $output, new Question('DB host [localhost]: ', 'localhost'));
-            }
-            if ($dbPort === '') {
-                $dbPort = (string) $helper->ask($input, $output, new Question("DB puerto [{$defaultPort}]: ", $defaultPort));
-            }
-            if ($dbName === '') {
-                $dbName = (string) $helper->ask($input, $output, new Question('DB nombre [app_db]: ', 'app_db'));
-            }
-            if ($dbUser === '') {
-                $defaultUser = $dbType === 'mysql' ? 'root' : 'sa';
-                $dbUser = (string) $helper->ask($input, $output, new Question("DB usuario [{$defaultUser}]: ", $defaultUser));
-            }
-            if ($dbPass === '') {
-                $q = new Question('DB contrasena [vacio]: ', '');
-                $q->setHidden(true);
-                $q->setHiddenFallback(false);
-                $dbPass = (string) $helper->ask($input, $output, $q);
+            if ($dbMode === 'docker') {
+                if ($dbHost === '') {
+                    $dbHost = (string) $helper->ask($input, $output, new Question('DB host [localhost]: ', 'localhost'));
+                }
+                if ($dbPort === '') {
+                    $dbPort = (string) $helper->ask($input, $output, new Question("DB puerto [{$defaultPort}]: ", $defaultPort));
+                }
+                if ($dbName === '') {
+                    $dbName = (string) $helper->ask($input, $output, new Question('DB nombre [app_db]: ', 'app_db'));
+                }
+                if ($dbUser === '') {
+                    $dbUser = (string) $helper->ask($input, $output, new Question("DB usuario [{$defaultUser}]: ", $defaultUser));
+                }
+                if ($dbPass === '') {
+                    $q = new Question('DB contrasena [vacio]: ', '');
+                    $q->setHidden(true);
+                    $q->setHiddenFallback(false);
+                    $dbPass = (string) $helper->ask($input, $output, $q);
+                }
+            } else {
+                if ($dbDsn === '') {
+                    $dbDsn = (string) $helper->ask($input, $output, new Question("DB DSN [{$defaultDsn}]: ", $defaultDsn));
+                }
+                if ($dbUser === '') {
+                    $dbUser = (string) $helper->ask($input, $output, new Question("DB usuario [{$defaultUser}]: ", $defaultUser));
+                }
+                if ($dbPass === '') {
+                    $q = new Question('DB contrasena [vacio]: ', '');
+                    $q->setHidden(true);
+                    $q->setHiddenFallback(false);
+                    $dbPass = (string) $helper->ask($input, $output, $q);
+                }
             }
         }
 
         $dbHost = $dbHost !== '' ? $dbHost : 'localhost';
         $dbPort = $dbPort !== '' ? $dbPort : $defaultPort;
         $dbName = $dbName !== '' ? $dbName : 'app_db';
-        $dbUser = $dbUser !== '' ? $dbUser : ($dbType === 'mysql' ? 'root' : 'sa');
+        $dbUser = $dbUser !== '' ? $dbUser : $defaultUser;
+
+        if ($dbMode === 'connection-string') {
+            if ($dbDsn === '') {
+                $output->writeln('<error>Debes proporcionar --db-dsn cuando db-mode=connection-string.</error>');
+                return Command::FAILURE;
+            }
+            if (!str_contains($dbDsn, ':')) {
+                $output->writeln('<error>DB DSN invalido. Debe iniciar con el driver PDO (ej: sqlsrv:... o mysql:...).</error>');
+                return Command::FAILURE;
+            }
+        }
 
         $appEnv = (string) $input->getOption('env');
         if (!in_array($appEnv, ['development', 'production'], true)) {
@@ -118,8 +161,10 @@ final class NewProjectCommand extends Command
         $runMigrate = (bool) $input->getOption('run-migrate');
         $withDocker = (bool) $input->getOption('with-docker');
 
-        if (!$withDocker && $input->isInteractive()) {
-            $withDocker = (bool) $helper->ask($input, $output, new ConfirmationQuestion('Generar Docker? (y/N): ', false));
+        if ($dbMode === 'docker') {
+            $withDocker = true;
+        } elseif (!$withDocker && $input->isInteractive()) {
+            $withDocker = (bool) $helper->ask($input, $output, new ConfirmationQuestion('Generar Docker para PHP+Nginx (sin DB)? (y/N): ', false));
         }
 
         if ($input->isInteractive()) {
@@ -164,7 +209,9 @@ final class NewProjectCommand extends Command
         $config = [
             'projectName' => $name,
             'preset' => $preset,
+            'dbMode' => $dbMode,
             'dbType' => $dbType,
+            'dbDsn' => $dbDsn,
             'dbHost' => $dbHost,
             'dbPort' => $dbPort,
             'dbName' => $dbName,
@@ -187,6 +234,9 @@ final class NewProjectCommand extends Command
         if ($withDocker) {
             $output->writeln('  docker compose up -d --build');
             $output->writeln('  curl.exe http://localhost:8080/health');
+            if ($dbMode === 'connection-string') {
+                $output->writeln('  # Nota: la base se conecta por DB_DSN; no se levanta servicio DB en docker-compose.');
+            }
         } else {
             $output->writeln('  php -S localhost:8000 -t public');
             $output->writeln('  curl.exe http://127.0.0.1:8000/health');

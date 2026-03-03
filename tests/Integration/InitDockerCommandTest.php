@@ -53,6 +53,19 @@ final class InitDockerCommandTest extends TestCase
         $this->assertStringContainsString('MSSQL_SA_PASSWORD: ${DB_PASS}', $compose);
     }
 
+    public function testInitDockerSkipsDbServiceInConnectionStringMode(): void
+    {
+        file_put_contents($this->tmpRoot . DIRECTORY_SEPARATOR . '.env', "DB_TYPE=sqlsrv\nDB_MODE=connection-string\n");
+
+        $tester = new CommandTester(new InitDockerCommand());
+        $exitCode = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $compose = (string) file_get_contents($this->tmpRoot . DIRECTORY_SEPARATOR . 'docker-compose.yml');
+        $this->assertStringNotContainsString('mcr.microsoft.com/mssql/server:2022-latest', $compose);
+        $this->assertStringNotContainsString('MSSQL_SA_PASSWORD', $compose);
+    }
+
     private function deleteDir(string $dir): void
     {
         if (!is_dir($dir)) {
@@ -80,4 +93,3 @@ final class InitDockerCommandTest extends TestCase
         @rmdir($dir);
     }
 }
-

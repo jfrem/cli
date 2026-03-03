@@ -36,7 +36,17 @@ final class DbFreshCommand extends Command
         }
 
         $env = EnvReader::read(getcwd() . '/.env');
-        $dbType = $env['DB_TYPE'] ?? 'mysql';
+        $dbType = strtolower(trim((string) ($env['DB_TYPE'] ?? 'mysql')));
+        $dbDsn = trim((string) ($env['DB_DSN'] ?? ''));
+        if ($dbDsn !== '') {
+            $output->writeln('<error>db:fresh no esta permitido con DB_DSN (connection-string). Usa db:migrate sobre la base existente.</error>');
+            return Command::FAILURE;
+        }
+        if (!in_array($dbType, ['mysql', 'sqlsrv'], true)) {
+            $output->writeln('<error>DB_TYPE invalido. Usa mysql o sqlsrv.</error>');
+            return Command::FAILURE;
+        }
+
         $host = $env['DB_HOST'] ?? 'localhost';
         $port = $env['DB_PORT'] ?? ($dbType === 'mysql' ? '3306' : '1433');
         $name = $env['DB_NAME'] ?? 'app_db';

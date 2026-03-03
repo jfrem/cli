@@ -31,6 +31,7 @@ final class NewProjectSqlsrvDockerTest extends TestCase
         $config = [
             'projectName' => 'demo-auth',
             'preset' => 'api-auth-jwt',
+            'dbMode' => 'docker',
             'dbType' => 'sqlsrv',
             'dbHost' => 'localhost',
             'dbPort' => '1433',
@@ -57,6 +58,7 @@ final class NewProjectSqlsrvDockerTest extends TestCase
 
         $this->assertSame('db', $env['DB_HOST'] ?? null);
         $this->assertSame('app_db', $env['DB_NAME'] ?? null);
+        $this->assertSame('docker', $env['DB_MODE'] ?? null);
         $this->assertSame('1', $env['DB_ENCRYPT'] ?? null);
         $this->assertSame('1', $env['DB_TRUST_SERVER_CERT'] ?? null);
 

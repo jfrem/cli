@@ -25,14 +25,27 @@ final class DbMigrateCommand extends Command
         ProjectContext::assertInProject(getcwd());
 
         $env = EnvReader::read(getcwd() . '/.env');
-        $dbType = $env['DB_TYPE'] ?? 'mysql';
+        $dbType = strtolower(trim((string) ($env['DB_TYPE'] ?? 'mysql')));
+        $dbDsn = trim((string) ($env['DB_DSN'] ?? ''));
+        if ($dbDsn !== '' && !str_contains($dbDsn, ':')) {
+            $output->writeln('<error>DB_DSN invalido. Debe iniciar con el driver PDO (ej: sqlsrv:... o mysql:...).</error>');
+            return Command::FAILURE;
+        }
+        if (!in_array($dbType, ['mysql', 'sqlsrv'], true)) {
+            $dbType = $this->inferDbTypeFromDsn($dbDsn);
+        }
+        if (!in_array($dbType, ['mysql', 'sqlsrv'], true)) {
+            $output->writeln('<error>DB_TYPE invalido. Usa mysql o sqlsrv.</error>');
+            return Command::FAILURE;
+        }
+
         $host = $env['DB_HOST'] ?? 'localhost';
         $port = $env['DB_PORT'] ?? ($dbType === 'mysql' ? '3306' : '1433');
         $name = $env['DB_NAME'] ?? 'app_db';
         $user = $env['DB_USER'] ?? ($dbType === 'mysql' ? 'root' : 'sa');
         $pass = $env['DB_PASS'] ?? '';
 
-        if (!$this->isSafeDatabaseName($name)) {
+        if ($dbDsn === '' && !$this->isSafeDatabaseName($name)) {
             $output->writeln('<error>DB_NAME invalido. Solo letras, numeros y guion bajo (iniciando en letra).</error>');
             return Command::FAILURE;
         }
@@ -51,7 +64,9 @@ final class DbMigrateCommand extends Command
         }
 
         try {
-            if ($dbType === 'sqlsrv') {
+            if ($dbDsn !== '') {
+                $dsn = $dbDsn;
+            } elseif ($dbType === 'sqlsrv') {
                 $encrypt = $this->envBool($env, 'DB_ENCRYPT', true) ? 'yes' : 'no';
                 $trust = $this->envBool($env, 'DB_TRUST_SERVER_CERT', false) ? 'yes' : 'no';
                 $dsn = "sqlsrv:Server={$host},{$port};Database={$name};Encrypt={$encrypt};TrustServerCertificate={$trust}";
@@ -93,5 +108,22 @@ final class DbMigrateCommand extends Command
     private function isSafeDatabaseName(string $name): bool
     {
         return (bool) preg_match('/^[A-Za-z][A-Za-z0-9_]{0,127}$/', $name);
+    }
+
+    private function inferDbTypeFromDsn(string $dsn): string
+    {
+        if ($dsn === '') {
+            return '';
+        }
+
+        $driver = strtolower((string) strtok($dsn, ':'));
+        if ($driver === 'mysql') {
+            return 'mysql';
+        }
+        if ($driver === 'sqlsrv') {
+            return 'sqlsrv';
+        }
+
+        return '';
     }
 }

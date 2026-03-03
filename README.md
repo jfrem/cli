@@ -6,7 +6,7 @@ CLI interactivo para generar scaffolding de APIs PHP MVC con buenas practicas, p
 - PHP `^8.1` para ejecutar el CLI.
 - Composer.
 
-Nota: el proyecto generado por defecto declara `php ^8.2` en su `composer.json`.
+Nota: el proyecto generado por defecto declara `php ^8.1` en su `composer.json`.
 
 ## Instalacion local (desarrollo)
 ```bash
@@ -32,10 +32,12 @@ php-init list
 - `php-init init:docker`
 
 ## Flujo interactivo (`new`)
-`new` pregunta por preset, motor de BD y parametros clave. Tambien puedes usar flags:
+`new` pregunta por preset, motor de BD y modalidad de configuracion. Tambien puedes usar flags:
 
 - `--preset=api-basic|api-auth-jwt|api-enterprise`
+- `--db-mode=docker|connection-string`
 - `--database=mysql|sqlsrv`
+- `--db-dsn="sqlsrv:Server=host,1433;Database=db;Encrypt=yes;TrustServerCertificate=no"`
 - `--db-host`, `--db-port`, `--db-name`, `--db-user`, `--db-pass`
 - `--env=development|production`
 - `--allowed-origins=*|https://app.com,https://admin.com`
@@ -49,7 +51,7 @@ php-init list
 
 ## SQL Server + Docker (paso a paso)
 ```bash
-php bin/php-init new demo-auth --preset=api-auth-jwt --database=sqlsrv --with-docker --no-interaction
+php bin/php-init new demo-auth --preset=api-auth-jwt --db-mode=docker --database=sqlsrv --no-interaction
 cd demo-auth
 docker compose up -d --build
 docker compose exec -T php composer install
@@ -68,6 +70,18 @@ curl.exe -X POST http://localhost:8080/auth/login -H "Content-Type: application/
 curl.exe -X POST http://localhost:8080/auth/refresh -H "Content-Type: application/json" -d "{\"token\":\"<ACCESS_TOKEN>\"}"
 curl.exe -X GET http://localhost:8080/auth/me -H "Authorization: Bearer <ACCESS_TOKEN>"
 ```
+
+## Connection String (instancia existente)
+```bash
+php bin/php-init new demo-existing-db --preset=api-auth-jwt --db-mode=connection-string --database=sqlsrv --db-dsn="sqlsrv:Server=10.0.0.25,1433;Database=audfact;Encrypt=yes;TrustServerCertificate=no" --db-user=sa --db-pass=Secret123! --no-interaction
+cd demo-existing-db
+php -S localhost:8000 -t public
+```
+
+Notas:
+- En `connection-string`, `DB_DSN` tiene prioridad sobre `DB_HOST/DB_PORT/DB_NAME`.
+- `db:fresh` se bloquea en este modo para evitar destruccion accidental de una base existente.
+- Si ejecutas `php-init init:docker` con `DB_MODE=connection-string`, se genera Docker para PHP+Nginx sin servicio DB.
 
 ## Seguridad aplicada
 - `db:migrate` y `db:fresh` usan TLS SQL Server por variables de entorno (`DB_ENCRYPT`, `DB_TRUST_SERVER_CERT`).
