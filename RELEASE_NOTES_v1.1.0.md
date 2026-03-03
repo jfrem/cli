@@ -8,8 +8,8 @@
   - Imagen PHP incluye `composer`, `git` y `unzip`.
 - Configuracion `.env` para `--with-docker --database=sqlsrv` lista para ejecutar:
   - `DB_HOST=db`
-  - `DB_NAME=master`
-  - `DB_PASS=YourStrong!Passw0rd`
+  - `DB_NAME=app_db`
+  - `DB_PASS` generado dinamicamente (sin secreto fijo)
   - `DB_ENCRYPT=1`
   - `DB_TRUST_SERVER_CERT=1`
 - Plantillas JWT mejoradas:
@@ -23,6 +23,7 @@
 - `composer validate --strict`: OK
 - `composer lint`: OK
 - Smoke test Docker + SQL Server + JWT: OK
+- Inicializacion DB local: `php-init db:fresh --force` (crea `app_db` y aplica migraciones)
 
 ## Commit y tag
 - Commit: `82d371d`

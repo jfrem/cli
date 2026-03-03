@@ -11,8 +11,8 @@ Fecha: 2026-03-03
 - [x] Probar `php bin/php-init new demo-auth --preset=api-auth-jwt --database=sqlsrv --with-docker --no-interaction`
 - [x] Confirmar que `.env` generado (Docker + SQL Server) incluye:
   - `DB_HOST=db`
-  - `DB_NAME=master`
-  - `DB_PASS=YourStrong!Passw0rd`
+  - `DB_NAME=app_db`
+  - `DB_PASS` generado dinamicamente (sin valor fijo)
   - `DB_ENCRYPT=1`
   - `DB_TRUST_SERVER_CERT=1`
 - [x] Confirmar que `.gitignore` contiene `/.env.*` y excepcion `!/.env.example`
@@ -48,4 +48,4 @@ Fecha: 2026-03-03
 - [ ] Cerrar hallazgos pendientes en backlog tecnico
 
 ## Notas de validacion
-- Para validar `register/login/refresh` en SQL Server fue necesario ejecutar migraciones SQL del scaffold (`users`, `refresh_tokens`, `jwt_denylist`) en la base configurada (`master`).
+- Para validar `register/login/refresh` en SQL Server fue necesario ejecutar migraciones SQL del scaffold (`users`, `refresh_tokens`, `jwt_denylist`) en la base configurada (`app_db`) via `php-init db:fresh --force`.

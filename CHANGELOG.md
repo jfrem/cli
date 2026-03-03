@@ -11,6 +11,10 @@
 - Comandos DB endurecidos:
   - `db:migrate` ahora usa TLS SQL Server configurable por `.env` (`DB_ENCRYPT`, `DB_TRUST_SERVER_CERT`) y valida `DB_NAME`.
   - `db:fresh` ahora bloquea DBs de sistema SQL Server (`master`, `model`, `msdb`, `tempdb`) y valida `DB_NAME`.
+- Documentacion de release alineada con el comportamiento vigente del scaffold SQL Server:
+  - `DB_NAME=app_db` como default Docker.
+  - `DB_PASS` generado dinamicamente (sin credencial fija).
+  - Notas operativas actualizadas para usar `php-init db:fresh --force` en inicializacion local.
 - Scaffold SQL Server + Docker endurecido:
   - `DB_NAME` por defecto de aplicacion (`app_db`) en lugar de `master`.
   - `DB_PASS` generado dinamicamente (sin valor fijo).
