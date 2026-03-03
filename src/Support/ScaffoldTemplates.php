@@ -94,12 +94,16 @@ DB_USER={$dbUser}
 DB_PASS={$dbPass}{$dbTlsConfig}{$jwtConfig}
 ENV;
     }
-
-    public static function readme(string $projectName, string $preset, bool $withDocker): string
+    public static function readme(string $projectName, string $preset, bool $withDocker, string $dbType = 'mysql'): string
     {
         $runInstructions = $withDocker
             ? "- `docker compose up -d --build`\n- `docker compose logs -f nginx`\n- `docker compose logs -f php`"
             : "- `php -S localhost:8000 -t public`";
+
+        $sqlsrvNote = '';
+        if ($withDocker && $dbType === 'sqlsrv') {
+            $sqlsrvNote = "\n\n## SQL Server\n\nSi la base no existe aun, inicializala desde la raiz del proyecto con:\n\n- `php-init db:fresh --force`\n\nEso crea la base configurada en `.env` y aplica migraciones del scaffold.";
+        }
 
         return <<<MD
 # {$projectName}
@@ -114,7 +118,7 @@ Proyecto generado con php-init ({$preset}).
 ## Health
 
 - `GET http://localhost:8080/health` (Docker)
-- `GET http://localhost:8000/health` (servidor embebido)
+- `GET http://localhost:8000/health` (servidor embebido){$sqlsrvNote}
 MD;
     }
 
@@ -1556,9 +1560,12 @@ PHP;
     public static function dockerCompose(string $dbType): string
     {
         $dbService = $dbType === 'sqlsrv'
-            ? "  db:\n    image: mcr.microsoft.com/mssql/server:2022-latest\n    environment:\n      ACCEPT_EULA: Y\n      MSSQL_SA_PASSWORD: YourStrong!Passw0rd\n    expose:\n      - \"1433\""
-            : "  db:\n    image: mysql:8\n    environment:\n      MYSQL_DATABASE: app_db\n      MYSQL_ROOT_PASSWORD: root\n    expose:\n      - \"3306\"";
+            ? "  db:\n    image: mcr.microsoft.com/mssql/server:2022-latest\n    environment:\n      ACCEPT_EULA: Y\n      MSSQL_SA_PASSWORD: \${DB_PASS}\n    expose:\n      - \"1433\""
+            : "  db:\n    image: mysql:8\n    environment:\n      MYSQL_DATABASE: \${DB_NAME:-app_db}\n      MYSQL_ROOT_PASSWORD: \${DB_PASS}\n    expose:\n      - \"3306\"";
 
         return "services:\n  php:\n    build:\n      context: .\n      dockerfile: docker/Dockerfile\n    volumes:\n      - ./:/var/www/html\n\n  nginx:\n    image: nginx:1.25-alpine\n    ports:\n      - \"8080:80\"\n    volumes:\n      - ./:/var/www/html\n      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro\n    depends_on:\n      - php\n\n{$dbService}\n";
     }
 }
+
+
+

@@ -47,40 +47,7 @@ php-init list
 - `--run-migrate`
 - `--no-interaction`
 
-Ejemplo no interactivo:
-```bash
-php bin/php-init new demo-auth \
-  --preset=api-auth-jwt \
-  --database=sqlsrv \
-  --db-host=localhost \
-  --db-port=1433 \
-  --db-name=demo_auth \
-  --db-user=sa \
-  --db-pass=Secret123 \
-  --env=production \
-  --allowed-origins=https://app.example.com \
-  --with-docker \
-  --no-interaction
-```
-
-## CI
-Incluye workflow de GitHub Actions en `.github/workflows/ci.yml`:
-- `composer validate --strict`
-- `composer install`
-- `composer lint`
-
-## Release Draft
-Incluye Release Drafter:
-- Workflow: `.github/workflows/release-drafter.yml`
-- Config: `.github/release-drafter.yml`
-
-## Licencia
-MIT. Ver `LICENSE`.
-
-
 ## SQL Server + Docker (paso a paso)
-Para el preset `api-auth-jwt` con SQL Server, este es el flujo recomendado de verificacion:
-
 ```bash
 php bin/php-init new demo-auth --preset=api-auth-jwt --database=sqlsrv --with-docker --no-interaction
 cd demo-auth
@@ -89,21 +56,12 @@ docker compose exec -T php composer install
 curl.exe http://localhost:8080/health
 ```
 
-Si el `health` reporta `database: down`, aplica migraciones SQL iniciales (preset JWT):
-
+Si la base no existe, desde la raiz del proyecto generado:
 ```bash
-docker compose exec -T php php -r "
-$pdo = new PDO('sqlsrv:Server=db,1433;Database=master;Encrypt=1;TrustServerCertificate=1', 'sa', 'YourStrong!Passw0rd');
-foreach (['users.sql','refresh_tokens.sql','jwt_denylist.sql'] as $f) {
-  $sql = file_get_contents('/var/www/html/database/migrations/sqlsrv/' . $f);
-  $pdo->exec($sql);
-}
-echo 'migrations_ok' . PHP_EOL;
-"
+php-init db:fresh --force
 ```
 
 Smoke test JWT:
-
 ```bash
 curl.exe -X POST http://localhost:8080/auth/register -H "Content-Type: application/json" -d "{\"email\":\"demo@example.com\",\"password\":\"Secret123!\"}"
 curl.exe -X POST http://localhost:8080/auth/login -H "Content-Type: application/json" -d "{\"email\":\"demo@example.com\",\"password\":\"Secret123!\"}"
@@ -111,6 +69,28 @@ curl.exe -X POST http://localhost:8080/auth/refresh -H "Content-Type: applicatio
 curl.exe -X GET http://localhost:8080/auth/me -H "Authorization: Bearer <ACCESS_TOKEN>"
 ```
 
-Notas:
-- Con `--with-docker` + `sqlsrv`, el scaffold ya genera `DB_HOST=db`, `DB_NAME=master`, `DB_PASS=YourStrong!Passw0rd`, `DB_ENCRYPT=1`, `DB_TRUST_SERVER_CERT=1`.
-- El contenedor PHP generado incluye `composer`, `git` y `unzip` para permitir `composer install` dentro del contenedor.
+## Seguridad aplicada
+- `db:migrate` y `db:fresh` usan TLS SQL Server por variables de entorno (`DB_ENCRYPT`, `DB_TRUST_SERVER_CERT`).
+- `db:fresh` bloquea DBs de sistema SQL Server: `master`, `model`, `msdb`, `tempdb`.
+- En scaffold Docker SQL Server:
+  - `DB_HOST=db`
+  - `DB_NAME=app_db`
+  - `DB_PASS` generado dinamicamente (sin credencial fija)
+  - `DB_ENCRYPT=1`
+  - `DB_TRUST_SERVER_CERT=1` (local Docker)
+- `docker-compose` consume `${DB_PASS}` / `${DB_NAME}` en vez de secretos hardcodeados.
+
+## Calidad y CI
+Workflow en `.github/workflows/ci.yml`:
+- `composer validate --strict`
+- `composer install`
+- `composer lint`
+- `composer test`
+
+## Release Draft
+Incluye Release Drafter:
+- Workflow: `.github/workflows/release-drafter.yml`
+- Config: `.github/release-drafter.yml`
+
+## Licencia
+MIT. Ver `LICENSE`.

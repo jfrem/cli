@@ -58,7 +58,7 @@ final class ProjectScaffolder
             '.env.dev' => ScaffoldTemplates::env($envConfig, 'development', $withJwt, false),
             '.env.test' => ScaffoldTemplates::env($envConfig, 'testing', $withJwt, true),
             '.env.prod' => ScaffoldTemplates::env($envConfig, 'production', $withJwt, true),
-            'README.md' => ScaffoldTemplates::readme((string) $config['projectName'], $preset, $withDocker),
+            'README.md' => ScaffoldTemplates::readme((string) $config['projectName'], $preset, $withDocker, $dbType),
             'public/index.php' => ScaffoldTemplates::publicIndex(),
             'public/.htaccess' => ScaffoldTemplates::htaccess(),
             'app/Controllers/Controller.php' => ScaffoldTemplates::baseController(),
@@ -120,24 +120,38 @@ final class ProjectScaffolder
         $resolved = $config;
         $dbHost = (string) ($resolved['dbHost'] ?? 'localhost');
         $dbPass = (string) ($resolved['dbPass'] ?? '');
-        $dbName = (string) ($resolved['dbName'] ?? 'app_db');
 
         if ($dbHost === '' || $dbHost === 'localhost' || $dbHost === '127.0.0.1') {
             $resolved['dbHost'] = 'db';
         }
 
         if ($dbPass === '') {
-            $resolved['dbPass'] = $dbType === 'sqlsrv' ? 'YourStrong!Passw0rd' : 'root';
-        }
-
-        if ($dbType === 'sqlsrv' && $dbName === 'app_db') {
-            $resolved['dbName'] = 'master';
+            $resolved['dbPass'] = $this->generateStrongPassword();
         }
 
         if ($dbType === 'sqlsrv') {
+            $resolved['dbEncrypt'] = '1';
             $resolved['dbTrustCert'] = '1';
+            if ((string) ($resolved['dbName'] ?? '') === '') {
+                $resolved['dbName'] = 'app_db';
+            }
         }
 
         return $resolved;
     }
+
+    private function generateStrongPassword(): string
+    {
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*_+-=';
+        $length = strlen($alphabet);
+        $bytes = random_bytes(18);
+        $password = '';
+
+        for ($i = 0; $i < 18; $i++) {
+            $password .= $alphabet[ord($bytes[$i]) % $length];
+        }
+
+        return $password;
+    }
 }
+

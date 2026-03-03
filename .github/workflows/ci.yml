@@ -34,3 +34,7 @@ jobs:
       - name: Lint
         run: composer lint
 
+
+      - name: Test
+        run: composer test
+

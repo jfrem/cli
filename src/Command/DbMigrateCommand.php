@@ -32,6 +32,11 @@ final class DbMigrateCommand extends Command
         $user = $env['DB_USER'] ?? ($dbType === 'mysql' ? 'root' : 'sa');
         $pass = $env['DB_PASS'] ?? '';
 
+        if (!$this->isSafeDatabaseName($name)) {
+            $output->writeln('<error>DB_NAME invalido. Solo letras, numeros y guion bajo (iniciando en letra).</error>');
+            return Command::FAILURE;
+        }
+
         $migrationsDir = getcwd() . '/database/migrations/' . $dbType;
         if (!is_dir($migrationsDir)) {
             $output->writeln("<error>No existe {$migrationsDir}</error>");
@@ -47,7 +52,9 @@ final class DbMigrateCommand extends Command
 
         try {
             if ($dbType === 'sqlsrv') {
-                $dsn = "sqlsrv:Server={$host},{$port};Database={$name};Encrypt=no;TrustServerCertificate=yes";
+                $encrypt = $this->envBool($env, 'DB_ENCRYPT', true) ? 'yes' : 'no';
+                $trust = $this->envBool($env, 'DB_TRUST_SERVER_CERT', false) ? 'yes' : 'no';
+                $dsn = "sqlsrv:Server={$host},{$port};Database={$name};Encrypt={$encrypt};TrustServerCertificate={$trust}";
             } else {
                 $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
             }
@@ -72,5 +79,19 @@ final class DbMigrateCommand extends Command
             $output->writeln('<error>Error en migraciones: ' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         }
+    }
+
+    /**
+     * @param array<string,string> $env
+     */
+    private function envBool(array $env, string $key, bool $default): bool
+    {
+        $value = strtolower(trim((string) ($env[$key] ?? ($default ? '1' : '0'))));
+        return in_array($value, ['1', 'true', 'yes', 'on'], true);
+    }
+
+    private function isSafeDatabaseName(string $name): bool
+    {
+        return (bool) preg_match('/^[A-Za-z][A-Za-z0-9_]{0,127}$/', $name);
     }
 }

@@ -43,6 +43,11 @@ final class DbFreshCommand extends Command
         $user = $env['DB_USER'] ?? ($dbType === 'mysql' ? 'root' : 'sa');
         $pass = $env['DB_PASS'] ?? '';
 
+        if (!$this->isSafeDatabaseName($name)) {
+            $output->writeln('<error>DB_NAME invalido. Solo letras, numeros y guion bajo (iniciando en letra).</error>');
+            return Command::FAILURE;
+        }
+
         try {
             if ($dbType === 'mysql') {
                 $pdo = new PDO("mysql:host={$host};port={$port};charset=utf8mb4", $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -50,9 +55,23 @@ final class DbFreshCommand extends Command
                 $pdo->exec("CREATE DATABASE `{$name}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
                 $output->writeln('<info>Base reconstruida (MySQL).</info>');
             } else {
-                $pdo = new PDO("sqlsrv:Server={$host},{$port};Database=master;Encrypt=no;TrustServerCertificate=yes", $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-                $pdo->exec("IF DB_ID('{$name}') IS NOT NULL BEGIN ALTER DATABASE [{$name}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{$name}] END");
-                $pdo->exec("CREATE DATABASE [{$name}]");
+                if (in_array(strtolower($name), ['master', 'model', 'msdb', 'tempdb'], true)) {
+                    $output->writeln('<error>Operacion bloqueada: DB_NAME apunta a una base de sistema SQL Server.</error>');
+                    return Command::FAILURE;
+                }
+
+                $encrypt = $this->envBool($env, 'DB_ENCRYPT', true) ? 'yes' : 'no';
+                $trust = $this->envBool($env, 'DB_TRUST_SERVER_CERT', false) ? 'yes' : 'no';
+                $pdo = new PDO(
+                    "sqlsrv:Server={$host},{$port};Database=master;Encrypt={$encrypt};TrustServerCertificate={$trust}",
+                    $user,
+                    $pass,
+                    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+                );
+
+                $dbEscaped = str_replace(']', ']]', $name);
+                $pdo->exec("IF DB_ID('{$dbEscaped}') IS NOT NULL BEGIN ALTER DATABASE [{$dbEscaped}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [{$dbEscaped}] END");
+                $pdo->exec("CREATE DATABASE [{$dbEscaped}]");
                 $output->writeln('<info>Base reconstruida (SQL Server).</info>');
             }
         } catch (\Throwable $e) {
@@ -63,5 +82,19 @@ final class DbFreshCommand extends Command
         return (new DbMigrateCommand())->run(new \Symfony\Component\Console\Input\ArrayInput([
             'command' => 'db:migrate',
         ]), $output);
+    }
+
+    /**
+     * @param array<string,string> $env
+     */
+    private function envBool(array $env, string $key, bool $default): bool
+    {
+        $value = strtolower(trim((string) ($env[$key] ?? ($default ? '1' : '0'))));
+        return in_array($value, ['1', 'true', 'yes', 'on'], true);
+    }
+
+    private function isSafeDatabaseName(string $name): bool
+    {
+        return (bool) preg_match('/^[A-Za-z][A-Za-z0-9_]{0,127}$/', $name);
     }
 }
