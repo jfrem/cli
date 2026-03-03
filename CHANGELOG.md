@@ -40,6 +40,10 @@
   - `init:docker` respeta `DB_MODE=connection-string` y omite el servicio DB en `docker-compose`.
 - Compatibilidad local de runtime:
   - El `composer.json` generado por scaffold ahora declara `php ^8.1` para permitir pruebas locales `/health` en entornos con PHP 8.1.
+- Desacople de namespace del CLI:
+  - Namespace interno migrado de `AudFact\\Cli` a `PhpInit\\Cli`.
+  - Binario `bin/php-init` y autoload PSR-4 actualizados al nuevo namespace.
+  - Nombre de paquete actualizado a `php-init/php-init` para evitar acople de marca.
 
 
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Tests\Integration;
+namespace PhpInit\Cli\Tests\Integration;
 
-use AudFact\Cli\Command\InitDockerCommand;
+use PhpInit\Cli\Command\InitDockerCommand;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -93,3 +93,4 @@ final class InitDockerCommandTest extends TestCase
         @rmdir($dir);
     }
 }
+

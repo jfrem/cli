@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Support;
+namespace PhpInit\Cli\Support;
 
 final class ProjectContext
 {
@@ -18,3 +18,4 @@ final class ProjectContext
         throw new \RuntimeException('No estas en un proyecto generado por php-init.');
     }
 }
+

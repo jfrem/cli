@@ -16,7 +16,7 @@ php bin/php-init list
 
 ## Instalacion global (usuario)
 ```bash
-composer global require audfact/php-init
+composer global require php-init/php-init
 php-init list
 ```
 
@@ -108,3 +108,4 @@ Incluye Release Drafter:
 
 ## Licencia
 MIT. Ver `LICENSE`.
+

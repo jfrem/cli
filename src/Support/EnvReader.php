@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Support;
+namespace PhpInit\Cli\Support;
 
 final class EnvReader
 {
@@ -29,3 +29,4 @@ final class EnvReader
         return $vars;
     }
 }
+

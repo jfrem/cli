@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Command;
+namespace PhpInit\Cli\Command;
 
-use AudFact\Cli\Support\NameSanitizer;
-use AudFact\Cli\Support\ProjectScaffolder;
+use PhpInit\Cli\Support\NameSanitizer;
+use PhpInit\Cli\Support\ProjectScaffolder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -277,3 +277,4 @@ final class NewProjectCommand extends Command
         }
     }
 }
+

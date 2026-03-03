@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Command;
+namespace PhpInit\Cli\Command;
 
-use AudFact\Cli\Support\ProjectContext;
+use PhpInit\Cli\Support\ProjectContext;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -40,3 +40,4 @@ final class ListRoutesCommand extends Command
         return Command::SUCCESS;
     }
 }
+

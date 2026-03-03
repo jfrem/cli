@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Command;
+namespace PhpInit\Cli\Command;
 
-use AudFact\Cli\Support\NameSanitizer;
-use AudFact\Cli\Support\ProjectContext;
-use AudFact\Cli\Support\SafeWriter;
+use PhpInit\Cli\Support\NameSanitizer;
+use PhpInit\Cli\Support\ProjectContext;
+use PhpInit\Cli\Support\SafeWriter;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,3 +35,4 @@ final class MakeControllerCommand extends Command
         return Command::SUCCESS;
     }
 }
+

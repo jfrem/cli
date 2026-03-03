@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Support;
+namespace PhpInit\Cli\Support;
 
 final class NameSanitizer
 {
@@ -44,3 +44,4 @@ final class NameSanitizer
         return $trimmed;
     }
 }
+

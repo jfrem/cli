@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Tests\Integration;
+namespace PhpInit\Cli\Tests\Integration;
 
-use AudFact\Cli\Support\ProjectScaffolder;
+use PhpInit\Cli\Support\ProjectScaffolder;
 use PHPUnit\Framework\TestCase;
 
 final class NewProjectSqlsrvDockerTest extends TestCase
@@ -116,3 +116,4 @@ final class NewProjectSqlsrvDockerTest extends TestCase
         @rmdir($dir);
     }
 }
+

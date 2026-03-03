@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli;
+namespace PhpInit\Cli;
 
-use AudFact\Cli\Command\DbFreshCommand;
-use AudFact\Cli\Command\DbMigrateCommand;
-use AudFact\Cli\Command\InitDockerCommand;
-use AudFact\Cli\Command\ListRoutesCommand;
-use AudFact\Cli\Command\MakeControllerCommand;
-use AudFact\Cli\Command\MakeCrudCommand;
-use AudFact\Cli\Command\MakeMiddlewareCommand;
-use AudFact\Cli\Command\MakeModelCommand;
-use AudFact\Cli\Command\NewProjectCommand;
+use PhpInit\Cli\Command\DbFreshCommand;
+use PhpInit\Cli\Command\DbMigrateCommand;
+use PhpInit\Cli\Command\InitDockerCommand;
+use PhpInit\Cli\Command\ListRoutesCommand;
+use PhpInit\Cli\Command\MakeControllerCommand;
+use PhpInit\Cli\Command\MakeCrudCommand;
+use PhpInit\Cli\Command\MakeMiddlewareCommand;
+use PhpInit\Cli\Command\MakeModelCommand;
+use PhpInit\Cli\Command\NewProjectCommand;
 use Symfony\Component\Console\Application as SymfonyApplication;
 
 final class Application extends SymfonyApplication
@@ -32,3 +32,4 @@ final class Application extends SymfonyApplication
         $this->add(new InitDockerCommand());
     }
 }
+

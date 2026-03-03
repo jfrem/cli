@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Tests\Integration;
+namespace PhpInit\Cli\Tests\Integration;
 
-use AudFact\Cli\Support\ProjectScaffolder;
+use PhpInit\Cli\Support\ProjectScaffolder;
 use PHPUnit\Framework\TestCase;
 
 final class ConnectionStringModeScaffoldTest extends TestCase
@@ -83,4 +83,5 @@ final class ConnectionStringModeScaffoldTest extends TestCase
         @rmdir($dir);
     }
 }
+
 

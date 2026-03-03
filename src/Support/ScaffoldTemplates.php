@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Support;
+namespace PhpInit\Cli\Support;
 
 final class ScaffoldTemplates
 {
@@ -1577,6 +1577,7 @@ PHP;
         return "services:\n  php:\n    build:\n      context: .\n      dockerfile: docker/Dockerfile\n    volumes:\n      - ./:/var/www/html\n\n  nginx:\n    image: nginx:1.25-alpine\n    ports:\n      - \"8080:80\"\n    volumes:\n      - ./:/var/www/html\n      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro\n    depends_on:\n      - php\n\n{$dbService}\n";
     }
 }
+
 
 
 

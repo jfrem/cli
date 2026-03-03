@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Support;
+namespace PhpInit\Cli\Support;
 
 final class SafeWriter
 {
@@ -35,3 +35,4 @@ final class SafeWriter
         self::write($basePath, $relativePath, $current . "\n" . trim($content) . "\n");
     }
 }
+

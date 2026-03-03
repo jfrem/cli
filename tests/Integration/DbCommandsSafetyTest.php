@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Tests\Integration;
+namespace PhpInit\Cli\Tests\Integration;
 
-use AudFact\Cli\Command\DbFreshCommand;
-use AudFact\Cli\Command\DbMigrateCommand;
+use PhpInit\Cli\Command\DbFreshCommand;
+use PhpInit\Cli\Command\DbMigrateCommand;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -104,3 +104,4 @@ final class DbCommandsSafetyTest extends TestCase
         @rmdir($dir);
     }
 }
+

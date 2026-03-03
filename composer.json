@@ -1,5 +1,5 @@
 {
-  "name": "audfact/php-init",
+  "name": "php-init/php-init",
   "description": "CLI PHP interactivo para generar APIs MVC con buenas practicas",
   "type": "library",
   "license": "MIT",
@@ -13,12 +13,12 @@
   },
   "autoload": {
     "psr-4": {
-      "AudFact\\Cli\\": "src/"
+      "PhpInit\\Cli\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "AudFact\\Cli\\Tests\\": "tests/"
+      "PhpInit\\Cli\\Tests\\": "tests/"
     }
   },
   "bin": [
@@ -32,3 +32,4 @@
     ]
   }
 }
+

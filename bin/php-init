@@ -5,7 +5,8 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use AudFact\Cli\Application;
+use PhpInit\Cli\Application;
 
 $app = new Application();
 $app->run();
+

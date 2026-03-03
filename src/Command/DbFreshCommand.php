@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace AudFact\Cli\Command;
+namespace PhpInit\Cli\Command;
 
-use AudFact\Cli\Support\EnvReader;
-use AudFact\Cli\Support\ProjectContext;
+use PhpInit\Cli\Support\EnvReader;
+use PhpInit\Cli\Support\ProjectContext;
 use PDO;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -108,3 +108,4 @@ final class DbFreshCommand extends Command
         return (bool) preg_match('/^[A-Za-z][A-Za-z0-9_]{0,127}$/', $name);
     }
 }
+
