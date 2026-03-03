@@ -1,0 +1,41 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+template: |
+  ## Cambios
+  $CHANGES
+
+  ## Compatibilidad
+  - PHP: ^8.1
+  - Symfony Console: ^6.4 || ^7.2
+
+categories:
+  - title: 'Nuevas funcionalidades'
+    labels:
+      - 'feat'
+      - 'feature'
+  - title: 'Correcciones'
+    labels:
+      - 'fix'
+      - 'bug'
+  - title: 'Refactors y mantenimiento'
+    labels:
+      - 'refactor'
+      - 'chore'
+
+change-template: '- $TITLE (#$NUMBER)'
+version-resolver:
+  major:
+    labels:
+      - 'major'
+      - 'breaking-change'
+  minor:
+    labels:
+      - 'feat'
+      - 'feature'
+  patch:
+    labels:
+      - 'fix'
+      - 'bug'
+      - 'chore'
+  default: patch
+

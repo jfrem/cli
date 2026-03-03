@@ -1,0 +1,30 @@
+{
+  "name": "audfact/php-init",
+  "description": "CLI PHP interactivo para generar APIs MVC con buenas practicas",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": "^8.1",
+    "ext-json": "*",
+    "symfony/console": "^6.4 || ^7.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "AudFact\\Cli\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "AudFact\\Cli\\Tests\\": "tests/"
+    }
+  },
+  "bin": [
+    "bin/php-init"
+  ],
+  "scripts": {
+    "lint": "php -r \"$rii=new RecursiveIteratorIterator(new RecursiveDirectoryIterator('src'));foreach($rii as $f){if($f->isDir())continue;if(substr($f->getFilename(),-4)=='.php'){passthru('php -l '.escapeshellarg($f->getPathname()),$c);if($c!==0)exit($c);}}\"",
+    "test": [
+      "@lint"
+    ]
+  }
+}

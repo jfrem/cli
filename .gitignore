@@ -1,0 +1,8 @@
+/vendor/
+/composer.phar
+/.phpunit.cache/
+/coverage/
+/.idea/
+/.vscode/
+/tmp/
+
